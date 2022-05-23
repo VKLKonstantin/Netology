@@ -1,0 +1,18 @@
+{
+  "name": "netology-project",
+  "version": "1.0.0",
+  "main": "utility.js",
+  "bin": {
+    "current date": "./utility.js"
+    },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "eslint": "^8.16.0",
+    "yargs": "^17.5.1"
+  }
+}
