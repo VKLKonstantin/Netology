@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "utils.js",
   "bin": {
-    "utilityDate": "./utility.js"
+    "utilityDate": "./utility.js",
+    "hiddenNumber": "./guess-number.js"
     },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
