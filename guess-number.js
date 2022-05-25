@@ -3,7 +3,7 @@
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 
-const argv = yargs(hideBin(process.argv)).argv
+const argv = yargs(hideBin(process.argv)).argv;
 
 let start = 0;
 let end = 0;
@@ -15,8 +15,8 @@ const generatorRandom = () => {
     end = Math.floor(Math.random() * 10) + 11 // (10 до 20]
     hiddenNumber = Math.floor(Math.random() * (end - start + 1)) + start
 
-    console.log('start', start)
-    console.log('end', end)
+    // console.log('start', start)
+    // console.log('end', end)
     console.log('hiddenNumber', hiddenNumber)
 
     console.log(`Угадай число в диапазоне от ${start} до ${end}`)
