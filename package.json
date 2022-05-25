@@ -1,9 +1,9 @@
 {
   "name": "netology-project",
   "version": "1.0.0",
-  "main": "utility.js",
+  "main": "utils.js",
   "bin": {
-    "current date": "./utility.js"
+    "current": "./utility.js"
     },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
