@@ -1,0 +1,7 @@
+{"date":"2022-06-02T18:41:15.686Z","round":2,"entered_number":4,"result":"los"}
+{"date":"2022-06-02T18:41:23.170Z","round":2,"entered_number":5,"result":"victory"}
+{"date":"2022-06-02T18:48:22.153Z","round":2,"entered_number":8,"result":"los"}
+{"date":"2022-06-02T18:48:24.642Z","round":3,"entered_number":3,"result":"los"}
+{"date":"2022-06-02T18:48:28.237Z","round":4,"entered_number":4,"result":"los"}
+{"date":"2022-06-02T18:48:30.840Z","round":5,"entered_number":5,"result":"los"}
+{"date":"2022-06-02T18:48:32.992Z","round":5,"entered_number":6,"result":"victory"}
