@@ -1,18 +1,19 @@
 {
   "name": "netology-project",
   "version": "1.0.0",
-  "main": "utility.js",
-  "bin": {
-    "current date": "./utility.js"
-    },
+  "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "dev":"node -r dotenv/config index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "dotenv": "^16.0.1",
     "eslint": "^8.16.0",
-    "yargs": "^17.5.1"
+    "yargs": "^17.5.1",
+    "uuid": "^8.3.2"
   }
 }
