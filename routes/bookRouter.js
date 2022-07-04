@@ -3,6 +3,7 @@ const { v4: uuid } = require('uuid')
 
 const router = express.Router()
 const fileMulter = require('../middleware')
+const message = require('../bodyParserMiddleware')
 
 class Book {
     constructor(title = "", description = "", authors = "", favorite = "", fileCover = "", fileName = "", fileBook = "", id = uuid()) {
@@ -19,16 +20,16 @@ class Book {
 
 const bookStore = {
     booksList: [
-        new Book("book1", "description", "authors", "favorite", "fileCover", "1655208206713-red-book-png.jpg"),
-        new Book("book2"),
-        new Book("book3"),
-        new Book("book4"),
+        new Book("book1", "description1", "authors1", "favorite1", "fileCover1", "1655208206713-red-book-png.jpg"),
+        new Book("book2", "description2", "authors2", "favorite2", "fileCover2", "1655217067842-blue-books.jpg"),
+        new Book("book3", "description3", "authors3", "favorite3", "fileCover3", ""),
+        new Book("book4", "description4", "authors4", "favorite4", "fileCover4", ""),
     ],
 };
 
 router.get('/books', (req, res) => {
     const { booksList } = bookStore
-    res.json(booksList)
+    res.render("listBooks", { booksList, title: 'Список книг' });
 })
 
 router.get('/books/:id', (req, res) => {
@@ -38,7 +39,7 @@ router.get('/books/:id', (req, res) => {
     const indexBook = booksList.findIndex(element => element.id === id)
 
     if (indexBook !== -1) {
-        res.json(booksList[indexBook])
+        res.render("aboutBook", { book: booksList[indexBook], title: `Книга ${booksList[indexBook].title}` });
     } else {
         res.status(404)
         res.json('404 | Книга не найдена')
@@ -51,34 +52,44 @@ router.post('/user/login', (req, res) => {
     res.json(myEmail)
 })
 
-router.post('/addBooks', fileMulter.single('book'), (req, res) => {
+router.get('/createBook', (req, res) => {
+    res.render("createBook", { title: "Добавьте книгу", book: {} });
+})
+
+router.post('/createBook', (req, res) => {
+    const { title, description, authors, favorite, fileCover, fileName, fileBook } = req.body
     const { booksList } = bookStore
-    const { title, description, authors, favorite, fileCover, fileName } = req.body
+    console.log('authors', JSON.stringify(authors))
+    const newBook = new Book(title, description, authors, favorite, fileCover, fileName, fileBook)
+    booksList.push(newBook)
+
     if (req.file) {
         const fileBook = req.file;
         const newBook = new Book(title, description, authors, favorite, fileCover, fileName, fileBook)
         booksList.push(newBook)
         res.status(201)
-        res.json(newBook)
+        res.render('listBooks', { booksList, title: 'Список книг' });
     }
-
     else {
-        res.json(null);
+        res.render('listBooks', { booksList, title: 'Список книг' });
     }
-
-
-
-
-    // booksList.fileBook = ""
-    // const newBook = new Book(title, description, authors, favorite, fileCover, fileName, fileBook)
-    // booksList.push(newBook)
-
-    // res.status(201)
-    // res.json(newBook)
 })
 
+router.get('/editBook/:id', (req, res) => {
+    const { id } = req.params;
+    const { booksList } = bookStore
+    const indexBook = booksList.findIndex(element => element.id === id)
+    console.log('indexBook', indexBook)
+    if (indexBook !== -1) {
+        res.render("editBook", { book: booksList[indexBook], title: 'Редактирование' });
 
-router.put('/editBook/:id', (req, res) => {
+    } else {
+        res.status(404)
+        res.json('404 | Книга не найдена')
+    }
+})
+
+router.post('/editBook/:id', (req, res) => {
     const { booksList } = bookStore
     const { title, description, authors, favorite, fileCover, fileName } = req.body
     const { id } = req.params
@@ -96,7 +107,7 @@ router.put('/editBook/:id', (req, res) => {
             fileName,
         }
 
-        res.json(booksList[indexBook])
+        res.render("listBooks", { booksList, title: 'Список книг' });
     } else {
         res.status(404)
         res.json('404 | Книга не найдена')
@@ -129,7 +140,6 @@ router.get('/books/:id/download', (req, res) => {
     const fileName = book.fileName;
     console.log('fileName', fileName)
     console.log('__dirname', __dirname)
-    // res.download(__dirname +`/myUploads/${fileName}`);
     res.download(__dirname + `/myUploads/${fileName}`, `${book.fileName}`, err => {
         if (err) {
             res.json(err)

@@ -1,0 +1,44 @@
+<%- include('header'), {title:title} %>
+
+    <div>
+        <table>
+            <tr>
+                <th>title</th>
+                <th>description</th>
+                <th>authors</th>
+                <th>favorite</th>
+                <th>fileCover</th>
+                <th>fileName</th>
+                <th>fileBook</th>
+
+            </tr>
+
+            <tr>
+                <td>
+                    <%= book.title %>
+                </td>
+                <td>
+                    <%= book.description %>
+                </td>
+                <td>
+                    <%= book.authors %>
+                </td>
+                <td>
+                    <%= book.favorite %>
+                </td>
+                <td>
+                    <%= book.fileCover %>
+                </td>
+                <td>
+                    <%= book.fileName %>
+                </td>
+                <td>
+                    <%= book.fileBook %>
+                </td>
+            </tr>
+
+        </table>
+        <a href="/api/editBook/<%= book.id %>" class="gradient-button"> Редактировать</a>
+        <a href="/api/books" class="back"> Назад</a>
+    </div>
+    <%- include('end') %>
