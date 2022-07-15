@@ -1,0 +1,15 @@
+services: 
+
+  storage:
+    image: redis:latest
+
+  counter:
+    build: .
+    ports: 
+      - 80:3002
+    environment: 
+      - PORT=3002
+      - REDIS_URL=storage
+    depends_on:
+        - storage
+      

@@ -1,9 +1,10 @@
 const express = require('express')
 const { v4: uuid } = require('uuid')
+const redis = require('redis')
 
 const router = express.Router()
-const fileMulter = require('../middleware')
-const message = require('../bodyParserMiddleware')
+const REDIS_URL = process.env.REDIS_URL || 'localhost'
+const client = redis.createClient(`redis://${REDIS_URL}`)
 
 class Book {
     constructor(title = "", description = "", authors = "", favorite = "", fileCover = "", fileName = "", fileBook = "", id = uuid()) {
@@ -147,5 +148,24 @@ router.get('/books/:id/download', (req, res) => {
     });
 
 })
+
+router.get('/counter/:bookId', async (req, res) => {
+    const { bookId } = req.params;
+
+    const count = await client.get(bookId)
+    res.json(count)
+})
+
+router.post('/counter/:bookId/incr', async (req, res) => {
+    const { bookId } = req.params;
+    try {
+        const cnt = await client.incr(bookId)
+        res.json({cnt})
+    } catch (e) {
+        res.statusCode(500).json('Error redis')
+    }
+})
+
+
 
 module.exports = router
