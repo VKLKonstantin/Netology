@@ -38,7 +38,11 @@
             </tr>
 
         </table>
-        <a href="/api/editBook/<%= book.id %>" class="gradient-button"> Редактировать</a>
-        <a href="/api/books" class="back"> Назад</a>
+        <a href="/api/editBook/<%= book.id %>" class="gradient-button"> Редактировать </a>
+        <a href="/api/books" class="back"> Назад </a>
+
+        <form method="POST" >
+            <button type="submit" class="button_delete" >Удалить</button>
+        </form>
     </div>
     <%- include('end') %>

@@ -1,42 +1,29 @@
 const express = require('express')
 const { v4: uuid } = require('uuid')
 const redis = require('redis')
+const bookModel = require('../models/book_model')
 
 const router = express.Router()
 const REDIS_URL = process.env.REDIS_URL || 'localhost'
 const client = redis.createClient(`redis://${REDIS_URL}`)
 
-class Book {
-    constructor(title = "", description = "", authors = "", favorite = "", fileCover = "", fileName = "", fileBook = "", id = uuid()) {
-        this.id = id
-        this.title = title
-        this.description = description
-        this.authors = authors
-        this.favorite = favorite
-        this.fileCover = fileCover
-        this.fileName = fileName
-        this.fileBook = fileBook
+router.get('/books', async (req, res) => {
+    try {
+        const booksList = await bookModel.find()
+        res.render("listBooks", { booksList, title: 'Список книг' });
     }
-}
+    catch (e) {
+        console.log(e)
+        res.json(500, { error: 'Mongo error' })
+    }
 
-const bookStore = {
-    booksList: [
-        new Book("book1", "description1", "authors1", "favorite1", "fileCover1", "1655208206713-red-book-png.jpg"),
-        new Book("book2", "description2", "authors2", "favorite2", "fileCover2", "1655217067842-blue-books.jpg"),
-        new Book("book3", "description3", "authors3", "favorite3", "fileCover3", ""),
-        new Book("book4", "description4", "authors4", "favorite4", "fileCover4", ""),
-    ],
-};
-
-router.get('/books', (req, res) => {
-    const { booksList } = bookStore
-    res.render("listBooks", { booksList, title: 'Список книг' });
 })
 
-router.get('/books/:id', (req, res) => {
+router.get('/books/:id', async (req, res) => {
 
     const { id } = req.params
-    const { booksList } = bookStore
+    const booksList = await bookModel.find()
+
     const indexBook = booksList.findIndex(element => element.id === id)
 
     if (indexBook !== -1) {
@@ -44,6 +31,19 @@ router.get('/books/:id', (req, res) => {
     } else {
         res.status(404)
         res.json('404 | Книга не найдена')
+    }
+})
+
+router.post('/books/:id', async (req, res) => {
+
+    const { id } = req.params
+    try {
+        await bookModel.deleteOne({ _id: id })
+        const booksList = await bookModel.find()
+        res.render("listBooks", { booksList, title: 'Список книг' });
+    } catch (e) {
+        res.status(404)
+        res.json('Не удалось удалить книгу')
     }
 })
 
@@ -57,32 +57,27 @@ router.get('/createBook', (req, res) => {
     res.render("createBook", { title: "Добавьте книгу", book: {} });
 })
 
-router.post('/createBook', (req, res) => {
+router.post('/createBook', async (req, res) => {
     const { title, description, authors, favorite, fileCover, fileName, fileBook } = req.body
-    const { booksList } = bookStore
-    console.log('authors', JSON.stringify(authors))
-    const newBook = new Book(title, description, authors, favorite, fileCover, fileName, fileBook)
-    booksList.push(newBook)
+    const newBook = new bookModel({ title, description, authors, favorite, fileCover, fileName, fileBook })
 
-    if (req.file) {
-        const fileBook = req.file;
-        const newBook = new Book(title, description, authors, favorite, fileCover, fileName, fileBook)
-        booksList.push(newBook)
+    try {
+        await newBook.save()
+        const booksList = await bookModel.find()
         res.status(201)
         res.render('listBooks', { booksList, title: 'Список книг' });
     }
-    else {
-        res.render('listBooks', { booksList, title: 'Список книг' });
+    catch (e) {
+        console.log(e)
     }
 })
 
-router.get('/editBook/:id', (req, res) => {
+router.get('/editBook/:id', async (req, res) => {
     const { id } = req.params;
-    const { booksList } = bookStore
-    const indexBook = booksList.findIndex(element => element.id === id)
-    console.log('indexBook', indexBook)
-    if (indexBook !== -1) {
-        res.render("editBook", { book: booksList[indexBook], title: 'Редактирование' });
+    const selectedBook = await bookModel.findById(id).select('-__v')
+
+    if (selectedBook) {
+        res.render("editBook", { book: selectedBook, title: 'Редактирование' });
 
     } else {
         res.status(404)
@@ -90,26 +85,15 @@ router.get('/editBook/:id', (req, res) => {
     }
 })
 
-router.post('/editBook/:id', (req, res) => {
-    const { booksList } = bookStore
+router.post('/editBook/:id', async (req, res) => {
     const { title, description, authors, favorite, fileCover, fileName } = req.body
     const { id } = req.params
-
-    const indexBook = booksList.findIndex(element => element.id === id)
-
-    if (indexBook !== -1) {
-        booksList[indexBook] = {
-            ...booksList[indexBook],
-            title,
-            description,
-            authors,
-            favorite,
-            fileCover,
-            fileName,
-        }
-
+    try {
+        await bookModel.findByIdAndUpdate(id, { title, description, authors, favorite, fileCover, fileName })
+        const booksList = await bookModel.find()
         res.render("listBooks", { booksList, title: 'Список книг' });
-    } else {
+    }
+    catch (e) {
         res.status(404)
         res.json('404 | Книга не найдена')
     }
@@ -148,24 +132,5 @@ router.get('/books/:id/download', (req, res) => {
     });
 
 })
-
-router.get('/counter/:bookId', async (req, res) => {
-    const { bookId } = req.params;
-
-    const count = await client.get(bookId)
-    res.json(count)
-})
-
-router.post('/counter/:bookId/incr', async (req, res) => {
-    const { bookId } = req.params;
-    try {
-        const cnt = await client.incr(bookId)
-        res.json({cnt})
-    } catch (e) {
-        res.statusCode(500).json('Error redis')
-    }
-})
-
-
 
 module.exports = router

@@ -67,3 +67,27 @@
 .back:active {
     background-color: #808080;
 }
+
+.button_delete {
+    text-decoration: none;
+    display: inline-block;
+    color: red;
+    padding: 20px 30px;
+    margin: 10px 20px;
+    border-radius: 10px;
+    font-family: 'Montserrat', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: absolute;
+    left: 14.5%;
+    top: 100%;
+}
+
+.button_delete:hover {
+    cursor: pointer;
+    box-shadow: 0 7px 14px rgb(65 132 144 / 10%), 0 3px 6px rgb(0 0 0 / 8%);
+    font-size: 15px;
+    color: white;
+    background: red;
+    transition: all 1s;
+}
