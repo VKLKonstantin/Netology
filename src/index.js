@@ -15,7 +15,7 @@ app.use(express.static("public"));
 app.use('/api', bookRouter);
 app.use('/middlewareLoadBook', middlewareRouter);
 app.use('/', (req, res) => {
-    res.render("menu", { title: "Добро пожаловать в библиотеку!" });
+    res.render("start", { title: "Добро пожаловать в библиотеку!" });
 })
 
 async function start(PORT, UrlDB) {

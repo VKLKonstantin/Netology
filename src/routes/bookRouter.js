@@ -1,11 +1,12 @@
 const express = require('express')
-const { v4: uuid } = require('uuid')
-const redis = require('redis')
 const bookModel = require('../models/book_model')
+const registarationModel = require('../models/registration_model')
 
 const router = express.Router()
-const REDIS_URL = process.env.REDIS_URL || 'localhost'
-const client = redis.createClient(`redis://${REDIS_URL}`)
+
+router.get('/menu', async (req, res) => {
+    res.render("menu", { title: 'Добро пожаловать в Ваш личный кабинет' });
+})
 
 router.get('/books', async (req, res) => {
     try {
@@ -20,7 +21,6 @@ router.get('/books', async (req, res) => {
 })
 
 router.get('/books/:id', async (req, res) => {
-
     const { id } = req.params
     const booksList = await bookModel.find()
 
@@ -34,23 +34,53 @@ router.get('/books/:id', async (req, res) => {
     }
 })
 
-router.post('/books/:id', async (req, res) => {
-
+router.post('/books/delete/:id', async (req, res) => {
     const { id } = req.params
     try {
         await bookModel.deleteOne({ _id: id })
-        const booksList = await bookModel.find()
-        res.render("listBooks", { booksList, title: 'Список книг' });
+        res.render("menu", {title: 'Список книг' });
     } catch (e) {
         res.status(404)
         res.json('Не удалось удалить книгу')
     }
 })
 
-router.post('/user/login', (req, res) => {
-    const { myEmail } = req.body
-    res.status(201)
-    res.json(myEmail)
+router.get('/registration', (req, res) => {
+    res.render("registration", { title: "Регистрация" });
+})
+
+router.post('/registration', async (req, res) => {
+    const { login, password } = req.body;
+
+    const credits = new registarationModel({ login, password })
+    console.log('credits', credits)
+    try {
+        await credits.save()
+        res.render("menu", { title: 'Добро пожаловать в Ваш личный кабинет' });
+    }
+    catch (e) {
+        console.log(e)
+    }
+})
+router.get('/login', (req, res) => {
+    res.render("login", { title: "Вход" });
+})
+
+router.post('/login', async (req, res) => {
+    const { login, password } = req.body;
+    try {
+        const auth = await registarationModel.findOne({ login, password })
+        console.log(auth)
+        if (auth) {
+            res.render("menu", { title: 'Добро пожаловать в Ваш личный кабинет' });
+        }
+        else {
+            res.json('Вам нужно зарегистрироваться')
+        }
+    }
+    catch (e) {
+        console.log(e)
+    }
 })
 
 router.get('/createBook', (req, res) => {
@@ -94,20 +124,6 @@ router.post('/editBook/:id', async (req, res) => {
         res.render("listBooks", { booksList, title: 'Список книг' });
     }
     catch (e) {
-        res.status(404)
-        res.json('404 | Книга не найдена')
-    }
-})
-
-router.delete('/deleteBook/:id', (req, res) => {
-    const { booksList } = bookStore
-    const { id } = req.params
-    const indexBook = booksList.findIndex(el => el.id === id)
-
-    if (indexBook !== -1) {
-        booksList.splice(indexBook, 1)
-        res.json("ok")
-    } else {
         res.status(404)
         res.json('404 | Книга не найдена')
     }
