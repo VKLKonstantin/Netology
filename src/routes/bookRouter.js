@@ -1,6 +1,6 @@
 const express = require('express')
 const bookModel = require('../models/book_model')
-const registarationModel = require('../models/registration_model')
+const userModel = require('../models/user_model')
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
 
@@ -16,7 +16,7 @@ const verifyPassword = (user, password) => {
 };
 
 const verify = (login, password, done) => {
-     registarationModel.findOne({ login: login }, (err, user) => {
+    userModel.findOne({ login: login }, (err, user) => {
         if (err) {
             return done(err)
         }
@@ -35,8 +35,8 @@ passport.serializeUser((user, cb) => {
     cb(null, user._id)
 });
 
-passport.deserializeUser(async (id, cb) => {
-    await registarationModel.findById(id, (err, user) => {
+passport.deserializeUser((id, cb) => {
+    userModel.findById(id, (err, user) => {
         if (err) return cb(err);
         return cb(null, user);
     });
@@ -47,10 +47,21 @@ router.get('/login', (req, res) => {
     res.render("login", { title: "Вход" });
 })
 
-router.post('/login', passport.authenticate('local', { failureRedirect: '/api/login' }), async (req, res) => {
+router.post('/login', passport.authenticate('local', { failureRedirect: '/api/login' }), (req, res) => {
     console.log('req', req.user)
+    console.log('request', req)
     res.redirect('/api/menu')
 })
+
+router.get('/logout', function (req, res, next) {
+    req.logout(function (err) {
+        if (err) {
+            return next(err);
+        }
+        console.log('requestLogout', req)
+        res.redirect('/');
+    });
+});
 
 router.get('/menu', async (req, res) => {
     res.render("menu", { title: 'Добро пожаловать в Ваш личный кабинет' });
@@ -100,7 +111,7 @@ router.get('/registration', (req, res) => {
 router.post('/registration', async (req, res) => {
     const { login, password } = req.body;
 
-    const credits = new registarationModel({ login, password })
+    const credits = new userModel({ login, password })
     try {
         await credits.save()
         res.render("menu", { title: 'Добро пожаловать в Ваш личный кабинет' });
@@ -175,5 +186,17 @@ router.get('/books/:id/download', (req, res) => {
     });
 
 })
+
+router.get('/user/me', (req, res, next) => {
+    if (!req.isAuthenticated()) {
+        return res.redirect('/api/login')
+    }
+    next()
+},
+    (req, res) => {
+        res.render('profile', { user: req.user, title: 'Ваш профиль' })
+    })
+
+
 
 module.exports = router
