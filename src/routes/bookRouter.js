@@ -1,8 +1,56 @@
 const express = require('express')
 const bookModel = require('../models/book_model')
 const registarationModel = require('../models/registration_model')
+const passport = require('passport')
+const LocalStrategy = require('passport-local').Strategy
 
 const router = express.Router()
+
+const options = {
+    usernameField: 'login',
+    passwordField: 'password',
+}
+
+const verifyPassword = (user, password) => {
+    return user.password === password
+};
+
+const verify = (login, password, done) => {
+     registarationModel.findOne({ login: login }, (err, user) => {
+        if (err) {
+            return done(err)
+        }
+        if (!user) {
+            return done(null, false, { message: `Пользователь ${login} не найден` })
+        }
+        if (!verifyPassword(user, password)) {
+            return done(null, false, { message: 'Не верный пароль' })
+        }
+        return done(null, user)
+    })
+}
+passport.use('local', new LocalStrategy(options, verify))
+
+passport.serializeUser((user, cb) => {
+    cb(null, user._id)
+});
+
+passport.deserializeUser(async (id, cb) => {
+    await registarationModel.findById(id, (err, user) => {
+        if (err) return cb(err);
+        return cb(null, user);
+    });
+}
+);
+
+router.get('/login', (req, res) => {
+    res.render("login", { title: "Вход" });
+})
+
+router.post('/login', passport.authenticate('local', { failureRedirect: '/api/login' }), async (req, res) => {
+    console.log('req', req.user)
+    res.redirect('/api/menu')
+})
 
 router.get('/menu', async (req, res) => {
     res.render("menu", { title: 'Добро пожаловать в Ваш личный кабинет' });
@@ -38,7 +86,7 @@ router.post('/books/delete/:id', async (req, res) => {
     const { id } = req.params
     try {
         await bookModel.deleteOne({ _id: id })
-        res.render("menu", {title: 'Список книг' });
+        res.render("menu", { title: 'Список книг' });
     } catch (e) {
         res.status(404)
         res.json('Не удалось удалить книгу')
@@ -53,30 +101,9 @@ router.post('/registration', async (req, res) => {
     const { login, password } = req.body;
 
     const credits = new registarationModel({ login, password })
-    console.log('credits', credits)
     try {
         await credits.save()
         res.render("menu", { title: 'Добро пожаловать в Ваш личный кабинет' });
-    }
-    catch (e) {
-        console.log(e)
-    }
-})
-router.get('/login', (req, res) => {
-    res.render("login", { title: "Вход" });
-})
-
-router.post('/login', async (req, res) => {
-    const { login, password } = req.body;
-    try {
-        const auth = await registarationModel.findOne({ login, password })
-        console.log(auth)
-        if (auth) {
-            res.render("menu", { title: 'Добро пожаловать в Ваш личный кабинет' });
-        }
-        else {
-            res.json('Вам нужно зарегистрироваться')
-        }
     }
     catch (e) {
         console.log(e)
