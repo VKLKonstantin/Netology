@@ -3,6 +3,7 @@ const session = require('express-session')
 const passport = require('passport')
 const middlewareRouter = require('./routes/middlewareRouter')
 const bookRouter = require('./routes/bookRouter')
+const userRouter = require('./routes/userRouter')
 const mongoose = require('mongoose')
 
 const PORT = process.env.PORT || 3002
@@ -38,6 +39,7 @@ const app = express()
 .use(passport.session())
 .use('/myUploads', express.static(__dirname + 'routes/myUploads'))
 .use(express.static("public"))
+.use('/user', userRouter)
 .use('/api', bookRouter)
 .use('/middlewareLoadBook', middlewareRouter)
 .use('/', (req, res) => {
