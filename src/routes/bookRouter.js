@@ -10,7 +10,8 @@ router.get('/menu', async (req, res) => {
 
 router.get('/books', async (req, res) => {
     try {
-        const booksList = await bookModel.find()
+        const { accountId } = req.user
+        const booksList = await bookModel.find({ accountId })
         res.render("listBooks", { booksList, title: 'Список книг' });
     }
     catch (e) {
@@ -51,8 +52,10 @@ router.get('/createBook', (req, res) => {
 
 router.post('/createBook', async (req, res) => {
     const { title, description, authors, favorite, fileCover, fileName, fileBook } = req.body
-
-    const newBook = new bookModel({ title, description, authors, favorite, fileCover, fileName, fileBook })
+    console.log('req.user', req.user)
+    const { accountId } = req.user
+    console.log('accountId', accountId)
+    const newBook = new bookModel({ accountId, title, description, authors, favorite, fileCover, fileName, fileBook })
 
     try {
         await newBook.save()

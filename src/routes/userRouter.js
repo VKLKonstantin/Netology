@@ -9,6 +9,7 @@ const router = express.Router()
 const options = {
     usernameField: 'login',
     passwordField: 'password',
+    accountIdField: 'accountId',
 }
 
 const verifyPassword = (user, password) => {
