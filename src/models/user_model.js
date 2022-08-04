@@ -2,6 +2,7 @@ const { Schema, model } = require('mongoose')
 
 const UserSchema = new Schema({
     accountId: { type: String },
+    userName: { type: String,  required: true },
     login: {
         type: String,
         unique: true,

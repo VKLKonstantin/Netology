@@ -1,6 +1,6 @@
 const express = require('express')
 const bookModel = require('../models/book_model')
-const userModel = require('../models/user_model')
+const chatModel = require('../models/chat_model')
 
 const router = express.Router()
 
@@ -10,8 +10,7 @@ router.get('/menu', async (req, res) => {
 
 router.get('/books', async (req, res) => {
     try {
-        const { accountId } = req.user
-        const booksList = await bookModel.find({ accountId })
+        const booksList = await bookModel.find()
         res.render("listBooks", { booksList, title: 'Список книг' });
     }
     catch (e) {
@@ -23,12 +22,14 @@ router.get('/books', async (req, res) => {
 
 router.get('/books/:id', async (req, res) => {
     const { id } = req.params
-    const booksList = await bookModel.find()
+    console.log(req.user)
+    const { userName } = req.user
+    const booksList = await bookModel.find({ _id: id })
+    const comments = await chatModel.find({ idBook: id })
 
     const indexBook = booksList.findIndex(element => element.id === id)
-
     if (indexBook !== -1) {
-        res.render("aboutBook", { book: booksList[indexBook], title: `Книга ${booksList[indexBook].title}` });
+        res.render("aboutBook", { book: booksList[indexBook], title: `Книга ${booksList[indexBook].title}`, userName, comments, id });
     } else {
         res.status(404)
         res.render("error", { title: '404 | Книга не найдена' })

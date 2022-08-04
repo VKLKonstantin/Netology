@@ -9,6 +9,7 @@ const router = express.Router()
 const options = {
     usernameField: 'login',
     passwordField: 'password',
+    userField: 'userName',
     accountIdField: 'accountId',
 }
 
@@ -68,9 +69,9 @@ router.get('/registration', (req, res) => {
 })
 
 router.post('/registration', async (req, res) => {
-    const { login, password } = req.body;
-
-    const credits = new userModel({ accountId: v4(), login, password })
+    const { login, password, userName } = req.body;
+    console.log(login, password, userName )
+    const credits = new userModel({ accountId: v4(), userName, login, password })
     try {
         await credits.save()
         res.render("menu", { title: 'Добро пожаловать в Ваш личный кабинет' });

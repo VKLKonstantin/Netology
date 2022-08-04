@@ -41,8 +41,76 @@
         <a href="/api/editBook/<%= book.id %>" class="gradient-button"> Редактировать </a>
         <a href="/api/books" class="back"> Назад </a>
 
-        <form method="POST" action="/api/books/delete/<%= book.id %>" >
-            <button type="submit" class="button_delete" >Удалить</button>
+        <form method="POST" action="/api/books/delete/<%= book.id %>">
+            <button type="submit" class="button_delete">Удалить</button>
         </form>
     </div>
+    <div style="position: absolute; top:145%">
+        <div id="list" class="list-group">
+            <%comments.map((el, idx)=> { %>
+                <div class="list-group-item list-group-item-action">
+                    <small>
+                        <%= el.userName %>
+                    </small>
+                    <small>
+                        <%= el.date %>
+                    </small>
+                    <p class="mb-1">
+                        <%= el.comment %>
+                    </p>
+                </div>
+                <% }); %>
+        </div>
+        <div>
+            <div>
+                <input type="hidden" id="username" class="form-control" value=<%=userName %> readonly >
+                <input type="hidden" id="idBook" class="form-control" value=<%=id%> readonly >
+            </div>
+
+        </div>
+        <div class="form-group">
+            <label for="text">Write Your comment</label>
+            <textarea placeholder="message" class="form-control" id="text" name="comment"></textarea>
+        </div>
+        <button type="submit" id="send-room" class="btn btn-primary">Send</button>
+    </div>
+    </div>
+
+    <script>
+        const roomName = location.pathname.split('/').pop();
+        const socket = io.connect('/', { query: `roomName=${roomName}` });
+
+        const boxList = document.querySelector('#list');
+        const inputUsername = document.querySelector('#username');
+        const inputIdBook = document.querySelector('#idBook');
+        const inputText = document.querySelector('#text');
+        const sendRoom = document.querySelector('#send-room');
+        const getTmp = (msg) => {
+            return `
+                <div>
+                    <div>
+                        <small> ${msg.date} </small>
+                        <small> ${msg.username} </small>
+                    </div>
+                    <p class="mb-1">${msg.comment}</p>
+                </div>
+        `;
+        };
+
+        socket.on('message-to-room', (msg) => {
+            const div = getTmp(msg)
+            boxList.insertAdjacentHTML('beforeend', div)
+        });
+
+        sendRoom.addEventListener('click', () => {
+            socket.emit('message-to-room', {
+                date: new Date().toDateString(),
+                idBook: inputIdBook.value,
+                username: inputUsername.value,
+                comment: inputText.value,
+            })
+        })
+
+    </script>
+
     <%- include('end') %>
